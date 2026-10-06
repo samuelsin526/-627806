@@ -4,9 +4,13 @@
 
 ## 先看效果
 
+**[直接进入职场拆局100问 →](https://samuelsin526.github.io/-627806/)**
+
+分享这个网站链接，打开即可搜索和阅读全部100问，无需登录GitHub或下载文件。
+
 - 下载 [`offline.html`](offline.html)，双击查看完整页面，无需联网或安装软件。
 - [阅读全部100问](book/完整正文.md)；[基础应对01—30](book/01-基础应对.md)；[协作进阶31—60](book/02-协作进阶.md)；[高阶判断与选择61—100](book/03-高阶判断与选择.md)。
-- 仓库 [`samuelsin526/-627806`](https://github.com/samuelsin526/-627806)。Pages尚未确认启用，仓库链接不等于在线网站。
+- 仓库 [`samuelsin526/-627806`](https://github.com/samuelsin526/-627806)。网站阅读请使用上方Pages链接；仓库用于保存与维护内容。
 
 每题提供：先判断、第一步、准备成本、可能收益、示例表达、完整拆解、适用边界、参考范围、相关问题，以及一张四格行动卡。行动卡帮助你在沟通前写下事实、选择与需要确认的事项，可以直接复制填写。网页支持全文搜索、编号直达、阶段/处境/准备时间筛选、收藏、复制话术、深链接和打印当前题目。收藏仅存在浏览器本地。
 
@@ -34,4 +38,4 @@
 
 ## GitHub Pages
 
-静态页面已就绪，根目录有 `.nojekyll`。首次发布需要在 Settings → Pages 选择 Deploy from a branch → main → /(root)。私有仓库能否启用Pages取决于账号方案。本仓库保持原有可见性。
+本仓库已按用户要求公开，并配置 GitHub Pages：Deploy from a branch → main → /(root)，根目录有 `.nojekyll`。网站地址为 https://samuelsin526.github.io/-627806/ 。main 分支更新后会自动重新发布；分享某一题可在网址后添加 `#q=43`。
