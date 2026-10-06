@@ -13,6 +13,7 @@ for q in questions:
     assert all(n!=q['id'] and 1<=n<=100 for n in q['related'])
     assert all(s in source_ids for s in q['reference']['sourceIds'])
     assert 'evidenceLevel' not in q
+    assert len(q['worksheet'])==4 and all(q['worksheet']),f"Q{q['id']} action card missing"
 new=questions[30:]
 assert len({q['say'] for q in new})==70,'Rewritten scripts must be unique'
 long_paras=[p for q in new for p in q['body'] if len(p)>55]
@@ -26,7 +27,7 @@ def entry(q):
     for p in q['body']:
         match=re.match(r'^【([^】]+)】(.*)$',p)
         lines += ['### '+match[1],'',match[2],''] if match else [p,'']
-    lines += ['**适用边界**：'+q['limit'],'','**参考范围**：'+q['reference']['note'],'']
+    lines += ['### 沟通前，填一张行动卡','']+[f'- {field}' for field in q['worksheet']]+['','**适用边界**：'+q['limit'],'','**参考范围**：'+q['reference']['note'],'']
     for k in ('ruleNote','readingNote'):
         if q['reference'].get(k):lines += [q['reference'][k],'']
     for s in q['reference']['sourceIds']:
