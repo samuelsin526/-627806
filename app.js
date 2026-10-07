@@ -1,7 +1,7 @@
 'use strict';
 (()=>{
 const items=window.ZHICHANG_ITEMS||[],sources=Object.fromEntries((window.ZHICHANG_SOURCES||[]).map(s=>[s.id,s]));
-const labels={up:'向上沟通',peer:'同事协作',manage:'团队管理',self:'工作自保',talk:'表达与发展',org:'组织判断'},volumes={1:'基础应对',2:'协作进阶',3:'高阶判断与选择'};
+const labels={up:'向上沟通',peer:'同事协作',manage:'团队管理',self:'工作自保',talk:'表达与发展',org:'组织判断'},volumes={1:'基础应对',2:'协作进阶',3:'高阶判断与选择'},volumeNo={1:'第一册',2:'第二册',3:'第三册'};
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const controls={search:$('#search'),volume:$('#volume'),category:$('#category'),time:$('#time'),saved:$('#savedOnly')};
 let saved=new Set;try{saved=new Set(JSON.parse(localStorage.getItem('zhichang-saved')||'[]').filter(n=>items.some(q=>q.id===n)))}catch{}
@@ -9,16 +9,22 @@ let active=readHash(),visible=[];
 function readHash(){const n=Number(new URLSearchParams(location.hash.slice(1)).get('q'));return items.some(q=>q.id===n)?n:1}
 function matches(q){const t=controls.search.value.trim().toLowerCase();return(controls.volume.value==='all'||q.volume===Number(controls.volume.value))&&(controls.category.value==='all'||q.category===controls.category.value)&&(controls.time.value==='all'||q.minutes<=Number(controls.time.value))&&(!controls.saved.checked||saved.has(q.id))&&(!t||(/^\d+$/.test(t)?q.id===Number(t):`${q.title} ${labels[q.category]} ${q.verdict} ${q.body.join(' ')} ${q.say}`.toLowerCase().includes(t)))}
 function reset(){controls.search.value='';controls.volume.value=controls.category.value=controls.time.value='all';controls.saved.checked=false}
+function questionHTML(q){return`<button class="question${q.id===active?' active':''}" data-question="${q.id}" ${q.id===active?'aria-current="true"':''}><span class="num">${String(q.id).padStart(2,'0')}</span><span><span class="qtitle">${esc(q.title)}</span><span class="qmeta">${labels[q.category]} · ${q.minutes<=10?'约10分钟':q.minutes<=30?'约半小时':'专项准备'}${saved.has(q.id)?' · 已收藏':''}</span></span></button>`}
+function directoryHTML(){return[1,2,3].map(v=>{const group=visible.filter(q=>q.volume===v);if(!group.length)return'';const open=group.some(q=>q.id===active);return`<details class="toc-group" ${open?'open':''}><summary><span><b>${volumeNo[v]}</b>${volumes[v]}</span><small>${group.length}问</small></summary><div class="toc-list">${group.map(questionHTML).join('')}</div></details>`}).join('')}
 function render(sync=true){visible=items.filter(matches);if(visible.length&&!visible.some(q=>q.id===active))active=visible[0].id;if(sync&&visible.length)history.replaceState(null,'',`#q=${active}`);$('#count').textContent=`${visible.length} / 100 个问题`;
-$('#questionList').innerHTML=visible.length?visible.map(q=>`<button class="question${q.id===active?' active':''}" data-question="${q.id}" ${q.id===active?'aria-current="true"':''}><span class="num">${String(q.id).padStart(2,'0')}</span><span><span class="qtitle">${esc(q.title)}</span><span class="qmeta">${labels[q.category]} · ${q.minutes<=10?'准备约10分钟内':q.minutes<=30?'准备约半小时内':'需专项准备'}${saved.has(q.id)?' · 已收藏':''}</span></span></button>`).join(''):'<div class="empty">没有匹配的问题。<br>换个关键词，或去掉一个筛选条件。</div>';renderDetail();}
-function keySentenceHTML(p){let marked=false;return(p.match(/[^。！？!?；;]+[。！？!?；;]?/g)||[p]).map(s=>{if(!marked&&/(真正.{0,18}(?:不是|要)|你要解决的不是|关键(?:不在|不是|是|就在)|核心(?:不是|是|在于)|本质(?:不是|是|在于)|最重要的(?:不是|是))/.test(s)){marked=true;return`<strong>${esc(s)}</strong>`}return esc(s)}).join('')}
-function bodyHTML(q){let scripts=0,steps=0,keyUsed=false;return q.body.map((p,i,all)=>{
-  const section=p.match(/^【([^】]+)】([\s\S]*)$/);if(section)return`<h4>${esc(section[1])}</h4><p>${esc(section[2])}</p>`;
-  const prev=all[i-1]||'',step=p.match(/^(第一|第二|第三|第四)[，、：]\s*(.+)$/),directCue=/(你可以这样说|可以这样说|可以这么说|建议这样说|你应该这样聊|你应该说|更好的问法|你可以接|接一句|可以问|你可以写|可以写|可以这样汇报|不妨这样说|换成这句话)/;
+$('#questionList').innerHTML=visible.length?directoryHTML():'<div class="empty">没有匹配的问题。<br>换个关键词，或去掉一个筛选条件。</div>';renderDetail();}
+const directCue=/(你可以这样说|可以这样说|可以这么说|建议这样说|你应该这样聊|你应该说|更好的问法|你可以接|接一句|可以问|你可以写|可以写|可以这样汇报|不妨这样说|换成这句话)/,keyPattern=/(真正.{0,18}(?:不是|要)|你要解决的不是|关键(?:不在|不是|是|就在)|核心(?:不是|是|在于)|本质(?:不是|是|在于)|最重要的(?:不是|是)|值得记住|意味着)/;
+function plainBody(p){return p.replace(/^【[^】]+】/,'')}
+function sectionCallout(body){const sections=body.map((p,i)=>{const m=p.match(/^【([^】]+)】/);return m?{i,title:m[1]}:null}).filter(Boolean);return sections.find(x=>/(别|不要|边界|风险|前提|保护|注意|限制|避免|退出|改道)/.test(x.title))||sections.find(x=>/(先|用|把|问|准备|同步|核对|确认|处理|下一轮|到期|材料|记录|行动|试验|选择)/.test(x.title))||null}
+function keyParagraph(body,excluded=-1){const exact=body.findIndex((p,i)=>i>1&&i!==excluded&&keyPattern.test(plainBody(p))&&plainBody(p).length<300);if(exact>=0)return exact;let best=-1,score=-99;body.forEach((p,i)=>{const t=plainBody(p);if(i<2||i===excluded||t.length<28||t.length>280||/^[“”]/.test(t))return;let s=(i/body.length)*2+(t.length<180?1:0)+(/(不要|需要|先|才能|应该|可以|不是|而是|值得|记住|判断|选择)/.test(t)?3:0)-(/[？?]$/.test(t)?2:0);if(s>score){score=s;best=i}});return best}
+function keySentenceHTML(p){const parts=p.match(/[^。！？!?；;]+[。！？!?；;]?/g)||[p];let target=parts.findIndex(s=>keyPattern.test(s));if(target<0)target=0;return parts.map((s,i)=>i===target?`<strong>${esc(s)}</strong>`:esc(s)).join('')}
+function bodyHTML(q){let scripts=0,steps=0,keyUsed=false;const sectionMark=sectionCallout(q.body),keyAt=keyParagraph(q.body,sectionMark?.i??-1);return q.body.map((p,i,all)=>{
+  const section=p.match(/^【([^】]+)】([\s\S]*)$/);if(section){if(i===sectionMark?.i){const boundary=/(别|不要|边界|风险|前提|保护|注意|限制|避免|退出|改道)/.test(section[1]);return`<div class="body-callout ${boundary?'body-boundary':'body-step'}"><span>${boundary?'边界提醒':'行动节点'}</span><h4>${esc(section[1])}</h4><p>${esc(section[2])}</p></div>`}if(i===keyAt){keyUsed=true;return`<h4>${esc(section[1])}</h4><p class="body-key">${keySentenceHTML(section[2])}</p>`}return`<h4>${esc(section[1])}</h4><p>${esc(section[2])}</p>`}
+  const prev=all[i-1]||'',step=p.match(/^(第一|第二|第三|第四)[，、：]\s*(.+)$/);
   if(step&&steps<3&&p.length<90){steps++;return`<div class="body-callout body-step"><span>行动节点</span><p>${esc(p)}</p></div>`}
   if((directCue.test(p)||(directCue.test(prev)&&/[“”]/.test(p)))&&/[“”]/.test(p)&&scripts<2&&p.length<420){scripts++;return`<div class="body-callout body-script"><span>可直接使用</span><p>${esc(p)}</p></div>`}
   if(/(?:建议你记住|只需要记住).{0,14}(?:个动作|件事|步)/.test(p)&&p.length<90)return`<h4 class="body-divider">${esc(p)}</h4>`;
-  if(!keyUsed&&i>1&&/(真正.{0,18}(?:不是|要)|你要解决的不是|关键(?:不在|不是|是|就在)|核心(?:不是|是|在于)|本质(?:不是|是|在于)|最重要的(?:不是|是))/.test(p)&&p.length<260){keyUsed=true;return`<p class="body-key">${keySentenceHTML(p)}</p>`}
+  if(!keyUsed&&i===keyAt){keyUsed=true;return`<p class="body-key">${keySentenceHTML(p)}</p>`}
   return`<p>${esc(p)}</p>`
 }).join('')}
 function cardHTML(q){return `<details class="action-card"><summary>沟通前，填一张行动卡</summary><p class="card-note">复制这四格，先填已知事实，未知的留待核对。</p><div id="cardText">${q.worksheet.map(f=>`<p>${esc(f)}</p>`).join('')}</div><button class="small-button" data-card>复制行动卡</button></details>`}
