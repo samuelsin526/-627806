@@ -42,3 +42,4 @@
 /* Make the right half unmistakably white; blue remains only on the left. */
 .hero{background:linear-gradient(105deg,#dce7ff 0%,#eaf1ff 30%,#f8faff 49%,#fff 58%,#fff 100%)}.hero::before,.hero::after{display:none}.hero-cover{background:#fff;border-left-color:#d7ddef}.hero-intro{background:linear-gradient(90deg,rgba(255,255,255,.18),rgba(255,255,255,.76) 58%,#fff 100%)}
 @media(max-width:650px){.hero{background:linear-gradient(180deg,#dce7ff 0%,#edf3ff 40%,#fff 62%,#fff 100%)}.hero-cover{background:transparent}}
+.personal-use{margin:16px -4px -4px;padding:13px 14px;border-radius:8px;background:#eef3ff;color:#4c5f89}.personal-use b{color:#263d75}
