@@ -4,3 +4,7 @@
 .mobile-browse{display:none}@media(max-width:650px){.mobile-browse{display:inline-block;margin-top:10px}.sidebar .filters,.sidebar .question-list{display:none}.sidebar.expanded .filters{display:block}.sidebar.expanded .question-list{display:grid}.sidebar .list-head{margin-bottom:0}.sidebar.expanded .list-head{margin-bottom:9px}}
 
 .action-card{margin:24px 0;padding:18px 22px;border:1px solid var(--line);border-radius:12px;background:#faf8f3}.action-card summary{cursor:pointer;font-weight:600}.action-card #cardText p{margin:16px 0;line-height:1.8}.card-note{font-size:13px;color:var(--muted)}
+
+/* Narrow-screen safeguards for long titles and the detail toolbar. */
+.tool-buttons{flex-wrap:wrap;justify-content:flex-end}h2{overflow-wrap:anywhere}
+@media(max-width:650px){.detail-tools{align-items:flex-start;flex-direction:column;gap:9px}.tool-buttons{width:100%;justify-content:flex-start}.small-button[data-print]{display:none}}

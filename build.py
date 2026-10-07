@@ -5,8 +5,17 @@ from collections import Counter
 ROOT=Path(__file__).resolve().parent
 questions=json.loads((ROOT/'content/questions.json').read_text('utf-8'))
 sources=json.loads((ROOT/'content/sources.json').read_text('utf-8'))
+reading_map=json.loads((ROOT/'content/reading-map.json').read_text('utf-8'))
 assert [q['id'] for q in questions]==list(range(1,101)), 'IDs must be 1-100'
 source_ids={s['id'] for s in sources}
+questions_by_id={q['id']:q for q in questions}
+for raw_id,extra in reading_map.items():
+    q=questions_by_id[int(raw_id)]
+    q['reference']['sourceIds']=list(dict.fromkeys(q['reference']['sourceIds']+extra['sourceIds']))
+    if '延伸阅读' not in q['reference']['kind']:
+        q['reference']['kind']+=' · 延伸阅读'
+    prior=q['reference'].get('readingNote','').strip()
+    q['reference']['readingNote']=' '.join(part for part in (prior,extra['note'].strip()) if part)
 for q in questions:
     for field in ('title','verdict','firstAction','say','cost','gain','limit','body','reference'):assert q[field],f"Q{q['id']} missing {field}"
     assert len(q['say'].strip('“” '))>10,f"Q{q['id']} broken script"
@@ -46,7 +55,9 @@ offline=re.sub(r'<link rel="stylesheet" href="style.css[^\"]*">','<style>'+(ROOT
 for file in ('evidence.js','data.js','app.js'):
     code=(ROOT/file).read_text('utf-8').replace('</script','<\\/script')
     offline=re.sub(fr'<script src="{re.escape(file)}[^\"]*"></script>',lambda m:'<script>'+code+'</script>',offline)
-# A single-file edition must not depend on neighboring download files.
-offline=offline.replace('href="offline.html" download','href="https://github.com/samuelsin526/-627806"').replace('href="book/完整正文.md" download','href="https://github.com/samuelsin526/-627806/blob/main/book/完整正文.md"').replace('href="docs/来源与核验.md"','href="https://github.com/samuelsin526/-627806/blob/main/docs/来源与核验.md"')
+# A single-file edition must not depend on neighboring download files or expose a repository entrance.
+offline=re.sub(r'<nav aria-label="工具">[\s\S]*?</nav>','<nav aria-label="工具"><a href="#detail">开始阅读 ↓</a></nav>',offline,count=1)
+offline=offline.replace('<section class="about">','<section class="about" id="source-note">',1)
+offline=offline.replace('href="docs/来源与核验.md"','href="#source-note"')
 (ROOT/'offline.html').write_text(offline,'utf-8')
-print(json.dumps({'questions':100,'rewritten_unique_scripts':70,'rewritten_unique_long_paragraphs':len(long_paras),'body_chars':sum(sum(map(len,q['body'])) for q in questions),'offline_bytes':len(offline.encode('utf-8'))},ensure_ascii=False))
+print(json.dumps({'questions':100,'extended_reading_questions':len(reading_map),'rewritten_unique_scripts':70,'rewritten_unique_long_paragraphs':len(long_paras),'body_chars':sum(sum(map(len,q['body'])) for q in questions),'offline_bytes':len(offline.encode('utf-8'))},ensure_ascii=False))
