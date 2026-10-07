@@ -1,6 +1,6 @@
 """Regenerate web data, Markdown volumes, and standalone offline edition."""
 from pathlib import Path
-import json,re
+import base64,json,re
 from collections import Counter
 ROOT=Path(__file__).resolve().parent
 questions=json.loads((ROOT/'content/questions.json').read_text('utf-8'))
@@ -59,5 +59,7 @@ for file in ('evidence.js','data.js','app.js'):
 offline=re.sub(r'<nav aria-label="工具">[\s\S]*?</nav>','<nav aria-label="工具"><a href="#detail">开始阅读 ↓</a></nav>',offline,count=1)
 offline=offline.replace('<section class="about">','<section class="about" id="source-note">',1)
 offline=offline.replace('href="docs/来源与核验.md"','href="#source-note"')
+qr_data=base64.b64encode((ROOT/'assets/wechat-qr.png').read_bytes()).decode('ascii')
+offline=offline.replace('src="assets/wechat-qr.png"',f'src="data:image/png;base64,{qr_data}"')
 (ROOT/'offline.html').write_text(offline,'utf-8')
 print(json.dumps({'questions':100,'extended_reading_questions':len(reading_map),'rewritten_unique_scripts':70,'rewritten_unique_long_paragraphs':len(long_paras),'body_chars':sum(sum(map(len,q['body'])) for q in questions),'offline_bytes':len(offline.encode('utf-8'))},ensure_ascii=False))
