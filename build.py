@@ -1,6 +1,6 @@
-"""Regenerate web data, Markdown volumes, and standalone offline edition."""
+"""Regenerate web data and Markdown volumes."""
 from pathlib import Path
-import base64,json,re
+import json,re
 from collections import Counter
 ROOT=Path(__file__).resolve().parent
 questions=json.loads((ROOT/'content/questions.json').read_text('utf-8'))
@@ -50,16 +50,4 @@ for v,title in [(1,'基础应对'),(2,'协作进阶'),(3,'高阶判断与选择'
     text=intro+'\n'.join(entry(q) for q in questions if q['volume']==v)
     text=re.sub(r'\]\(#q(\d+)\)',r'](完整正文.md#q\1)',text)
     (book/f'{v:02d}-{title}.md').write_text(text,'utf-8')
-offline=(ROOT/'index.html').read_text('utf-8')
-offline=re.sub(r'<link rel="stylesheet" href="style.css[^\"]*">','<style>'+(ROOT/'style.css').read_text('utf-8')+'</style>',offline)
-for file in ('evidence.js','data.js','app.js'):
-    code=(ROOT/file).read_text('utf-8').replace('</script','<\\/script')
-    offline=re.sub(fr'<script src="{re.escape(file)}[^\"]*"></script>',lambda m:'<script>'+code+'</script>',offline)
-# A single-file edition must not depend on neighboring download files or expose a repository entrance.
-offline=re.sub(r'<nav aria-label="工具">[\s\S]*?</nav>','<nav aria-label="工具"><a href="#detail">开始阅读 ↓</a></nav>',offline,count=1)
-offline=offline.replace('<section class="about">','<section class="about" id="source-note">',1)
-offline=offline.replace('href="docs/来源与核验.md"','href="#source-note"')
-qr_data=base64.b64encode((ROOT/'assets/wechat-qr.png').read_bytes()).decode('ascii')
-offline=offline.replace('src="assets/wechat-qr.png"',f'src="data:image/png;base64,{qr_data}"')
-(ROOT/'offline.html').write_text(offline,'utf-8')
-print(json.dumps({'questions':100,'extended_reading_questions':len(reading_map),'rewritten_unique_scripts':70,'rewritten_unique_long_paragraphs':len(long_paras),'body_chars':sum(sum(map(len,q['body'])) for q in questions),'offline_bytes':len(offline.encode('utf-8'))},ensure_ascii=False))
+print(json.dumps({'questions':100,'extended_reading_questions':len(reading_map),'rewritten_unique_scripts':70,'rewritten_unique_long_paragraphs':len(long_paras),'body_chars':sum(sum(map(len,q['body'])) for q in questions)},ensure_ascii=False))
