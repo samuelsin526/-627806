@@ -5,6 +5,9 @@
 
 .action-card{margin:24px 0;padding:18px 22px;border:1px solid var(--line);border-radius:12px;background:#faf8f3}.action-card summary{cursor:pointer;font-weight:600}.action-card #cardText p{margin:16px 0;line-height:1.8}.card-note{font-size:13px;color:var(--muted)}
 
+/* Selective reading marks: keep most prose plain and only surface decisions or reusable wording. */
+.body-callout{margin:17px 0;padding:13px 16px;border-left:3px solid;border-radius:0 9px 9px 0}.body-callout>span{display:block;margin-bottom:4px;font-size:10px;line-height:1.4;font-weight:700;letter-spacing:.04em}.body-callout p{margin:0;color:inherit}.body-script{background:#fbf6e8;border-color:#e4b253;color:#6c5128}.body-step{background:#eff7f3;border-color:#8fc5b2;color:#315f52}.body-key{padding:2px 0 2px 14px;border-left:3px solid #b66c52;color:var(--ink)!important}.body-key strong{font-weight:700;background:linear-gradient(transparent 68%,#f2dfb8 68%)}.body-divider{margin:27px 0 13px!important;padding-top:15px;border-top:1px solid var(--line);font-size:14px!important}
+
 /* Narrow-screen safeguards for long titles and the detail toolbar. */
 .tool-buttons{flex-wrap:wrap;justify-content:flex-end}h2{overflow-wrap:anywhere}
 @media(max-width:650px){.detail-tools{align-items:flex-start;flex-direction:column;gap:9px}.tool-buttons{width:100%;justify-content:flex-start}.small-button[data-print]{display:none}}
